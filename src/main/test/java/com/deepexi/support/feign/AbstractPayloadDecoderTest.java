@@ -27,7 +27,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class AbstractPayloadDecoderTest {
-
     @Autowired
     private ObjectFactory<HttpMessageConverters> messageConverters;
 
@@ -38,7 +37,6 @@ public class AbstractPayloadDecoderTest {
     public void setup() {
         testPayloadDecoder = new TestPayloadDecoder(messageConverters);
     }
-
 
     @Test
     public void decode() throws IOException {
@@ -56,17 +54,19 @@ public class AbstractPayloadDecoderTest {
         assertThat(decode.getCode()).isEqualTo("0");
     }
 
-
-    static class TestPayloadDecoder extends AbstractPayloadDecoder<OtherPayload> {
-
+    private static class TestPayloadDecoder extends AbstractPayloadDecoder<OtherPayload> {
         public TestPayloadDecoder(ObjectFactory<HttpMessageConverters> messageConverters) {
             super(messageConverters);
+        }
+
+        @Override
+        protected void check(OtherPayload otherPayload) {
+            // do nothing
         }
     }
 
     @Data
-    static class OtherPayload<T> implements PayloadHandler<T> {
-
+    private static class OtherPayload<T> implements PayloadHandler<T> {
         private String msg;
         private T payload;
         private String code;
@@ -78,7 +78,7 @@ public class AbstractPayloadDecoderTest {
     }
 
     @Data
-    static class MockData {
+    private static class MockData {
         private String data;
         private int totalElements;
         private int number;

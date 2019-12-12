@@ -42,9 +42,7 @@ public abstract class AbstractPayloadDecoder<T extends PayloadHandler> extends S
         }
     }
 
-    private Type getSuperClass() {
-        return ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-    }
+    protected abstract void check(T t);
 
     private Class getRawClass(Type type) {
         Class clazz = null;
@@ -56,9 +54,7 @@ public abstract class AbstractPayloadDecoder<T extends PayloadHandler> extends S
         return clazz;
     }
 
-    protected void check(T t) {
-        // TODO:: do something
+    private Type getSuperClass() {
+        return ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
-
-
 }
