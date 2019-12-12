@@ -1,6 +1,10 @@
 package com.deepexi.support.feign;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import feign.Response;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +15,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
+@Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class AbstractPayloadDecoderTest {
@@ -22,6 +32,7 @@ public class AbstractPayloadDecoderTest {
     private ObjectFactory<HttpMessageConverters> messageConverters;
 
     private TestPayloadDecoder testPayloadDecoder;
+    private String data = "{\"payload\":{\"totalElements\":27,\"content\":\"hhhhhhhh\",\"number\":1,\"size\":27,\"totalPages\":1,\"numberOfElements\":27},\"code\":\"0\",\"msg\":\"ok\"}";
 
     @Before
     public void setup() {
@@ -31,10 +42,18 @@ public class AbstractPayloadDecoderTest {
 
     @Test
     public void decode() throws IOException {
-        Class clazz = MockData.class;
-        Response response = Response.create(200, "hh", null, "{}".getBytes());
-        Object decode = testPayloadDecoder.decode(response, clazz);
-        System.out.println("decode = " + decode);
+        OtherPayload<MockData> decode = new OtherPayload<>();
+        Type clazz = decode.getClass();
+        Map<String, Collection<String>> headers = Maps.newLinkedHashMap();
+        ArrayList<String> es = Lists.newArrayList(APPLICATION_JSON_UTF8_VALUE);
+        headers.put("Content-Type", es);
+        Response response = Response.create(200, "OK", headers, data.getBytes());
+        decode = (OtherPayload<MockData>) testPayloadDecoder.decode(response, clazz);
+        log.info("Decoder data: {}", decode);
+//      log.info("Payload data type: {}", decode.getPayload().getClass());
+//      java.lang.ClassCastException: java.util.LinkedHashMap cannot be cast to com.deepexi.support.feign.AbstractPayloadDecoderTest$MockData
+        assertThat(decode.getPayload()).isNotNull();
+        assertThat(decode.getCode()).isEqualTo("0");
     }
 
 
@@ -45,17 +64,27 @@ public class AbstractPayloadDecoderTest {
         }
     }
 
-    static class OtherPayload<T> implements PayloadHandler {
+    @Data
+    static class OtherPayload<T> implements PayloadHandler<T> {
 
-        private T data;
+        private String msg;
+        private T payload;
+        private String code;
 
         @Override
         public T getPayload() {
-            return data;
+            return payload;
         }
     }
 
+    @Data
     static class MockData {
-
+        private String data;
+        private int totalElements;
+        private int number;
+        private int size;
+        private int totalPages;
+        private int numberOfElements;
+        private String content;
     }
 }
