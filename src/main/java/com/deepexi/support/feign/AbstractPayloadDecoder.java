@@ -23,6 +23,7 @@ public abstract class AbstractPayloadDecoder<T extends Payload> extends SpringDe
         this.messageConverters = messageConverters;
     }
 
+    @Override
     public Object decode(Response response, Type type) throws IOException, FeignException {
         Type payloadClazz = getSuperClass();
         if (!(type instanceof Class) && !(type instanceof ParameterizedType) && !(type instanceof WildcardType)) {

@@ -3,11 +3,14 @@ package com.deepexi.support.feign;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import feign.Response;
+import feign.codec.DecodeException;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,26 +29,72 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class AbstractPayloadDecoderTest {
+
     @Autowired
     private ObjectFactory<HttpMessageConverters> messageConverters;
 
     private TestPayloadDecoder decoder;
-    private String data = "{\"payload\":{\"foo\": \"bar\"},\"code\":\"0\",\"msg\":\"ok\"}";
+    private TestNonPayloadDecoder nonPayloadDecoder;
+    private String payloadData = "{\"payload\":{\"foo\": \"bar\"},\"code\":\"0\",\"msg\":\"ok\"}";
+    private String data = "{\"foo\": \"bar\"}";
+
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
 
     @Before
     public void setup() {
         decoder = new TestPayloadDecoder(messageConverters);
+        nonPayloadDecoder = new TestNonPayloadDecoder(messageConverters);
     }
 
     @Test
-    public void decode() throws IOException {
-        Map<String, Collection<String>> headers = Maps.newLinkedHashMap();
-        headers.put("Content-Type", Lists.newArrayList(APPLICATION_JSON_UTF8_VALUE));
-        Response response = Response.create(200, "OK", headers, data.getBytes());
+    public void decodePayload() throws IOException {
+        Response response = this.getResponse(payloadData, 200);
         MockData data = (MockData) decoder.decode(response, MockData.class);
         log.info("Payload data type: {}", data.getClass());
         log.info("Payload data: {}", data);
         assertThat(data.getFoo()).isEqualTo("bar");
+    }
+
+    @Test
+    public void decode() throws IOException {
+        Response response = this.getResponse(payloadData, 200);
+        MockData data = (MockData) decoder.decode(response, MockData.class);
+        log.info("Payload data type: {}", data.getClass());
+        log.info("Payload data: {}", data);
+        assertThat(data.getFoo()).isEqualTo("bar");
+    }
+
+
+    @Test
+    public void decodeThrowException() throws IOException {
+        thrown.expect(DecodeException.class);
+        thrown.expectMessage("type is not an instance of Class or ParameterizedType");
+        decoder.decode(this.getResponse(payloadData, 200), null);
+    }
+
+
+    @Test
+    public void nonPayloadDecode() throws IOException {
+        Response response = this.getResponse(data, 200);
+        MockDataNonPayload data = (MockDataNonPayload) nonPayloadDecoder.decode(response, MockDataNonPayload.class);
+        log.info("Payload data type: {}", data.getClass());
+        log.info("Payload data: {}", data);
+        assertThat(data.getFoo()).isEqualTo("bar");
+    }
+
+    private Response getResponse(String data, int status) {
+        Map<String, Collection<String>> headers = Maps.newLinkedHashMap();
+        headers.put("Content-Type", Lists.newArrayList(APPLICATION_JSON_UTF8_VALUE));
+        return Response.builder()
+                .request(null)
+                .headers(headers)
+                .status(status)
+                .reason("OK")
+                .body(data.getBytes())
+                .build();
     }
 
     private static class TestPayloadDecoder extends AbstractPayloadDecoder<OtherPayload> {
@@ -55,6 +104,17 @@ public class AbstractPayloadDecoderTest {
 
         @Override
         protected void check(OtherPayload otherPayload) {
+            // do nothing
+        }
+    }
+
+    private static class TestNonPayloadDecoder extends AbstractPayloadDecoder<MockDataNonPayload> {
+        public TestNonPayloadDecoder(ObjectFactory<HttpMessageConverters> messageConverters) {
+            super(messageConverters);
+        }
+
+        @Override
+        protected void check(MockDataNonPayload mockData) {
             // do nothing
         }
     }
@@ -75,5 +135,17 @@ public class AbstractPayloadDecoderTest {
     @ToString
     private static class MockData {
         private String foo;
+    }
+
+
+    @Data
+    @ToString
+    private static class MockDataNonPayload<T> implements Payload<T> {
+        private T foo;
+
+        @Override
+        public T parseData() {
+            return foo;
+        }
     }
 }
