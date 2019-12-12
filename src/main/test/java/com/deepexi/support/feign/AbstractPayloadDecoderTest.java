@@ -48,9 +48,9 @@ public class AbstractPayloadDecoderTest {
         Response response = Response.create(200, "OK", headers, data.getBytes());
         decode = (OtherPayload<MockData>) testPayloadDecoder.decode(response, clazz);
         log.info("Decoder data: {}", decode);
-//      log.info("Payload data type: {}", decode.getPayload().getClass());
+//      log.info("Payload data type: {}", decode.parseData().getClass());
 //      java.lang.ClassCastException: java.util.LinkedHashMap cannot be cast to com.deepexi.support.feign.AbstractPayloadDecoderTest$MockData
-        assertThat(decode.getPayload()).isNotNull();
+        assertThat(decode.parseData()).isNotNull();
         assertThat(decode.getCode()).isEqualTo("0");
     }
 
@@ -66,14 +66,14 @@ public class AbstractPayloadDecoderTest {
     }
 
     @Data
-    private static class OtherPayload<T> implements PayloadHandler<T> {
+    private static class OtherPayload<T> implements Payload<T> {
         private String msg;
         private T payload;
         private String code;
 
         @Override
-        public T getPayload() {
-            return payload;
+        public T parseData() {
+            return this.payload;
         }
     }
 

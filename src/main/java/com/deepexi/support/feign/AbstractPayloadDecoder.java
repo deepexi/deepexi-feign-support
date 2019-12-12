@@ -14,7 +14,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 
-public abstract class AbstractPayloadDecoder<T extends PayloadHandler> extends SpringDecoder {
+public abstract class AbstractPayloadDecoder<T extends Payload> extends SpringDecoder {
 
     private ObjectFactory<HttpMessageConverters> messageConverters;
 
@@ -34,7 +34,7 @@ public abstract class AbstractPayloadDecoder<T extends PayloadHandler> extends S
                 extractor = new HttpMessageConverterExtractor<T>(wrapperType, this.messageConverters.getObject().getConverters());
                 T r = (T) extractor.extractData(new PayloadFeignResponseAdapter(response));
                 this.check(r);
-                return r.getPayload();
+                return r.parseData();
             } else {
                 extractor = new HttpMessageConverterExtractor<T>(type, this.messageConverters.getObject().getConverters());
                 return extractor.extractData(new PayloadFeignResponseAdapter(response));
