@@ -31,12 +31,12 @@ public abstract class AbstractPayloadDecoder<T extends PayloadHandler> extends S
             HttpMessageConverterExtractor<?> extractor = null;
             if (payloadClazz != getRawClass(type)) {
                 ParameterizedTypeImpl wrapperType = ParameterizedTypeImpl.make(getRawClass(payloadClazz), new Type[]{type}, null);
-                extractor = new HttpMessageConverterExtractor(wrapperType, this.messageConverters.getObject().getConverters());
+                extractor = new HttpMessageConverterExtractor<T>(wrapperType, this.messageConverters.getObject().getConverters());
                 T r = (T) extractor.extractData(new PayloadFeignResponseAdapter(response));
                 this.check(r);
                 return r.getPayload();
             } else {
-                extractor = new HttpMessageConverterExtractor(type, this.messageConverters.getObject().getConverters());
+                extractor = new HttpMessageConverterExtractor<T>(type, this.messageConverters.getObject().getConverters());
                 return extractor.extractData(new PayloadFeignResponseAdapter(response));
             }
         }
