@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import feign.Response;
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,11 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 @Slf4j
@@ -30,7 +30,7 @@ public class AbstractPayloadDecoderTest {
     private ObjectFactory<HttpMessageConverters> messageConverters;
 
     private TestPayloadDecoder decoder;
-    private String data = "{\"payload\":{\"totalElements\":27,\"content\":\"hhhhhhhh\",\"number\":1,\"size\":27,\"totalPages\":1,\"numberOfElements\":27},\"code\":\"0\",\"msg\":\"ok\"}";
+    private String data = "{\"payload\":{\"foo\": \"bar\"},\"code\":\"0\",\"msg\":\"ok\"}";
 
     @Before
     public void setup() {
@@ -39,18 +39,13 @@ public class AbstractPayloadDecoderTest {
 
     @Test
     public void decode() throws IOException {
-        OtherPayload<MockData> payload = new OtherPayload<>();
-        Type clazz = payload.getClass();
         Map<String, Collection<String>> headers = Maps.newLinkedHashMap();
         headers.put("Content-Type", Lists.newArrayList(APPLICATION_JSON_UTF8_VALUE));
         Response response = Response.create(200, "OK", headers, data.getBytes());
-        MockData data = (MockData) decoder.decode(response, clazz);
-        log.info("Decoder data: {}", payload);
+        MockData data = (MockData) decoder.decode(response, MockData.class);
         log.info("Payload data type: {}", data.getClass());
-//        log.info("Payload data type: {}", payload.parseData().getClass());
-//      java.lang.ClassCastException: java.util.LinkedHashMap cannot be cast to com.deepexi.support.feign.AbstractPayloadDecoderTest$MockData
-        assertThat(payload.parseData()).isNotNull();
-        assertThat(payload.getCode()).isEqualTo("0");
+        log.info("Payload data: {}", data);
+        assertThat(data.getFoo()).isEqualTo("bar");
     }
 
     private static class TestPayloadDecoder extends AbstractPayloadDecoder<OtherPayload> {
@@ -77,13 +72,8 @@ public class AbstractPayloadDecoderTest {
     }
 
     @Data
+    @ToString
     private static class MockData {
-        private String data;
-        private int totalElements;
-        private int number;
-        private int size;
-        private int totalPages;
-        private int numberOfElements;
-        private String content;
+        private String foo;
     }
 }
