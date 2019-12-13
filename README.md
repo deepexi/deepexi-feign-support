@@ -1,4 +1,8 @@
 ## Deepexi-Feign-Support
+
+[![Build Status](https://travis-ci.org/deepexi/deepexi-feign-support.svg?branch=master)](https://travis-ci.org/deepexi/deepexi-feign-support)
+ [![Build Status](https://travis-ci.org/deepexi/deepexi-feign-support.svg?branch=master)](https://travis-ci.org/deepexi/deepexi-feign-support)
+
 一系列支持 Feign 相关的组件。
 
 ```yaml
