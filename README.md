@@ -20,7 +20,7 @@ Feign远程调用结果解码（PayloadDecoder）
  
  实现 parseData() 方法，可在其中进行自定义的数据解析操作，然后返回解析结果 T (所映射的 Bean)
  
- [详细参考示例](../src/main/test/java/com/deepexi/support/feign/AbstractPayloadDecoderTest.java)
+ [详细参考示例](https://github.com/deepexi/deepexi-feign-support/blob/master/src/main/test/java/com/deepexi/support/feign/AbstractPayloadDecoderTest.java)
 
 ```json
 {
