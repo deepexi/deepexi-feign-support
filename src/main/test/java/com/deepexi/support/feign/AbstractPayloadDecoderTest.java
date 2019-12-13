@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(classes = TestApp.class)
 @RunWith(SpringRunner.class)
 public class AbstractPayloadDecoderTest {
 
@@ -38,10 +38,8 @@ public class AbstractPayloadDecoderTest {
     private String payloadData = "{\"payload\":{\"foo\": \"bar\"},\"code\":\"0\",\"msg\":\"ok\"}";
     private String data = "{\"foo\": \"bar\"}";
 
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
 
     @Before
     public void setup() {
@@ -136,7 +134,6 @@ public class AbstractPayloadDecoderTest {
     private static class MockData {
         private String foo;
     }
-
 
     @Data
     @ToString
