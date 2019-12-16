@@ -10,7 +10,7 @@ Feign远程调用结果解码（PayloadDecoder）
 ....
 ```  
 
-
+[CHANGELOG](./CHANGELOG.md)
 
 #### PayloadDecoder 使用
 在远程调用完成后，针对多种类型的返回数据结果进行自定义解析
